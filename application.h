@@ -33,10 +33,11 @@
 /* ---------------- Exported functions prototypes --------------------- */   
 
 extern void app_on_adv_timeout		(void);
-extern void app_on_special_op		(uint8_t);
+extern void app_on_special_op			(uint8_t);
+extern void application_on_new_scan	(uint8_t);
 extern void application_on_conn		(void);
 extern void application_on_disconn	(void);
-extern void application_init		(void);
+extern void application_init			(void);
 extern void application_run			(void);
 
 

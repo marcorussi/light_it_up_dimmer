@@ -54,7 +54,10 @@
 #define DFU_UPGRADE_CHAR_PASSWORD				0xA9
 
 /* Default fade percentage value */
-#define DEF_FADE_PWM_PERCENT					50		/* 50% */
+#define DEF_FADE_PWM_PERCENT						50		/* 50% */
+
+/* Number of PWM values groups */
+#define NUM_OF_PWM_VALUES_GROUPS					2
 
 
 
@@ -86,6 +89,12 @@ const uint8_t default_values[BLE_DIMMER_SERVICE_CHARS_LENGTH] =
 /* Flag to indicate that adv timeout is elapsed */
 static volatile bool adv_timeout = false;
 
+static const uint8_t pwm_values[NUM_OF_PWM_VALUES_GROUPS][4] =
+{
+	{90, 90, 90, 90},
+	{20, 20, 20, 20}
+};
+
 
 
 
@@ -114,6 +123,25 @@ void app_on_special_op( uint8_t special_op_byte )
 	else
 	{
 		/* do nothing */
+	}
+}
+
+
+/* callback on new adv scan */
+void application_on_new_scan( uint8_t new_adv_data )
+{
+	/* check data validity */
+	if(new_adv_data < NUM_OF_PWM_VALUES_GROUPS)
+	{
+		/* update RGBW PWM values */
+		led_update_light(pwm_values[new_adv_data][0],
+				 			  pwm_values[new_adv_data][1],
+				 			  pwm_values[new_adv_data][2],
+				 			  pwm_values[new_adv_data][3]);
+	}
+	else
+	{
+		/* invalid data: do nothing */
 	}
 }
 
@@ -167,7 +195,7 @@ void application_run( void )
 		/* clear flag */
 		adv_timeout = false;
 #ifdef LED_DEBUG
-		nrf_gpio_pin_write(24, 0);
+		nrf_gpio_pin_write(7, 0);
 #endif
 		/* start scanning */
 		ble_man_scan_start();

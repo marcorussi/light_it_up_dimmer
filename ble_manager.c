@@ -48,7 +48,6 @@
 #include "config.h"
 #include "ble_manager.h"
 #include "dimmer_service.h"
-#include "led_strip.h"
 #include "application.h"
 
 
@@ -387,7 +386,7 @@ static void get_advertising_fields(uint8_t *p_data, uint8_t data_length)
 		{
 			/* preamble is valid. Device found */
 			/* get interesting data */
-			uint8_t data_flag = p_data[DATA_BYTE_2_POS];
+			uint8_t data_flag = p_data[DATA_BYTE_1_POS];
 			/* ATTENTION: everything else is not considered at the moment */
 	
 			/* if data flag is different than last one */
@@ -396,11 +395,12 @@ static void get_advertising_fields(uint8_t *p_data, uint8_t data_length)
 				/* store last data byte */
 				last_data_flag = data_flag;
 
-				/* update light according to required preset index */
-				led_update_light(	p_data[DATA_BYTE_3_POS],
-									p_data[DATA_BYTE_4_POS],
-									p_data[DATA_BYTE_5_POS],
-									p_data[DATA_BYTE_6_POS]);
+				/* send to application related data */
+				application_on_new_scan(p_data[DATA_BYTE_2_POS]);
+
+#ifdef LED_DEBUG
+				nrf_gpio_pin_toggle(7);
+#endif
 			}
 			else
 			{

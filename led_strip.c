@@ -65,16 +65,16 @@
 #define PWM_DC_MIN_VALUE                0                                                                 		
 
 /* PWM channel for RED */   
-#define PWM_CH_R          				5
+#define PWM_CH_R          				28
 
 /* PWM channel for GREEN */   
-#define PWM_CH_G          				6
+#define PWM_CH_G          				23
 
 /* PWM channel for BLUE */   
-#define PWM_CH_B          				8
+#define PWM_CH_B          				22
 
 /* PWM channel for BLUE */   
-#define PWM_CH_W         				10
+#define PWM_CH_W         				17
 
 
 

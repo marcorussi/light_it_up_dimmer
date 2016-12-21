@@ -28,7 +28,7 @@
 #ATTENTON: modify following names and paths as required
 PROJECT_NAME := ble_led_dimmer
 NRFJPROG_PATH := ./tools
-SDK_PATH := /opt/nRF5_SDK_11.0.0_89a8197
+SDK_PATH := ../nrf51_sdk_dependencies
 LINKER_SCRIPT := led_dimmer_nrf51.ld
 GNU_INSTALL_ROOT := /home/marco/ARMToolchain/gcc-arm-none-eabi-4_9-2015q2
 GNU_VERSION := 4.9.3
