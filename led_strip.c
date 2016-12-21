@@ -59,10 +59,10 @@
 #define PWM_FADE_PERIOD_MS				100    
 
 /* Maximum PWM DC value */
-#define PWM_DC_MAX_VALUE                100        
+#define PWM_DC_MAX_VALUE         	100        
 
 /* Minimum PWM DC value */                                 
-#define PWM_DC_MIN_VALUE                0                                                                 		
+#define PWM_DC_MIN_VALUE          	0                                                                 		
 
 /* PWM channel for RED */   
 #define PWM_CH_R          				28
@@ -136,33 +136,33 @@ void led_light_init(void)
 	ret_code_t err_code;
 
 	/* 2-channel PWM1, 200Hz, output on DK LED pins. */
-    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_CH_R, PWM_CH_G);
-    /* 2-channel PWM2, 200Hz, output on DK LED pins. */
-    app_pwm_config_t pwm2_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_CH_B, PWM_CH_W);
-    
-    /* Set PWM R channel polarity */
-    pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
-    /* Set PWM G channel polarity */
-    pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
-    /* Set PWM B channel polarity */
-    pwm2_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
-	/* Set PWM W channel polarity */
-    pwm2_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
-    
-    /* Initialize PWM1 */
-    err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback);
-    APP_ERROR_CHECK(err_code);
-    /* Initialize PWM2 */
-    err_code = app_pwm_init(&PWM2, &pwm2_cfg, pwm_ready_callback);
-    APP_ERROR_CHECK(err_code);
+	app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_CH_R, PWM_CH_G);
+	/* 2-channel PWM2, 200Hz, output on DK LED pins. */
+	app_pwm_config_t pwm2_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_CH_B, PWM_CH_W);
 
-    /* Enable PWM1 and PWM2 */
-    app_pwm_enable(&PWM1);
-    app_pwm_enable(&PWM2);
+	/* Set PWM R channel polarity */
+	pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	/* Set PWM G channel polarity */
+	pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	/* Set PWM B channel polarity */
+	pwm2_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	/* Set PWM W channel polarity */
+	pwm2_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
+
+	/* Initialize PWM1 */
+	err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback);
+	APP_ERROR_CHECK(err_code);
+	/* Initialize PWM2 */
+	err_code = app_pwm_init(&PWM2, &pwm2_cfg, pwm_ready_callback);
+	APP_ERROR_CHECK(err_code);
+
+	/* Enable PWM1 and PWM2 */
+	app_pwm_enable(&PWM1);
+	app_pwm_enable(&PWM2);
 
 	/* ready to do first PWM1/2 update */
-    pwm1_ready_flag = true;
-    pwm2_ready_flag = true;
+	pwm1_ready_flag = true;
+	pwm2_ready_flag = true;
 
 	/* ATTENTION: fade value is read from memory once during init */
 	/* get fade value at init only */
@@ -188,10 +188,10 @@ void led_turn_off(void)
 
 
 /* Function to update LED ligth */
-void led_update_light(	uint8_t red_value, 
-					  	uint8_t green_value, 
-						uint8_t blue_value, 
-						uint8_t white_value)
+void led_update_light( uint8_t red_value, 
+					  		  uint8_t green_value, 
+							  uint8_t blue_value, 
+							  uint8_t white_value)
 {
 	/* check values */
 	if((red_value <= 100)
