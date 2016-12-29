@@ -57,9 +57,9 @@
 
 /* Low frequency clock source to be used by the SoftDevice */
 #define NRF_CLOCK_LFCLKSRC      			{.source        = NRF_CLOCK_LF_SRC_RC,				\
-                                 		 	 .rc_ctiv       = 15,                              	\
-                                 		 	 .rc_temp_ctiv  = 15,								\
-                                 		 	 .xtal_accuracy = 0}
+                              		 	 .rc_ctiv       = 15,                              	\
+                              		 	 .rc_temp_ctiv  = 15,								\
+                              		 	 .xtal_accuracy = 0}
 
 /* Number of central links used by the application. When changing this number remember to adjust the RAM settings */
 #define CENTRAL_LINK_COUNT              	1   
@@ -621,13 +621,13 @@ static void ble_periph_adv_set_data(void)
 void ble_man_init(void)
 {
 	/* init stack */
-    ble_stack_init();
+	ble_stack_init();
 	/* init gap params */
-    gap_params_init();
+	gap_params_init();
 	/* init services */
-    services_init();
+	services_init();
 	/* init connection params */
-    conn_params_init();
+	conn_params_init();
 }
 
 
@@ -660,7 +660,7 @@ void ble_man_adv_start(void)
 	
 	/* start advertising */
 	err_code = sd_ble_gap_adv_start(&adv_params);
-    APP_ERROR_CHECK(err_code);
+   APP_ERROR_CHECK(err_code);
 }
 
 

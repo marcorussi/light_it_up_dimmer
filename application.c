@@ -195,7 +195,7 @@ void application_run( void )
 		/* clear flag */
 		adv_timeout = false;
 #ifdef LED_DEBUG
-		nrf_gpio_pin_write(7, 0);
+		//nrf_gpio_pin_write(7, 0);
 #endif
 		/* start scanning */
 		ble_man_scan_start();

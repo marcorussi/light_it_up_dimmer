@@ -46,8 +46,8 @@
 
 // TODO: consider to unify timers management between all modules
 /* Value of the RTC1 PRESCALER register. */
-#define APP_TIMER_PRESCALER          	0
-#define APP_TIMER_OP_QUEUE_SIZE         4  
+#define APP_TIMER_PRESCALER          		0
+#define APP_TIMER_OP_QUEUE_SIZE       		4  
 
 
 /* Value used as error code on stack dump, can be used to identify stack location on stack unwind. */                                       
@@ -80,22 +80,22 @@ static void power_manage(void)
 /* Application main function */
 int main(void)
 {
-    /* Initialize timers */
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, false);
+	/* Initialize timers */
+	APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, false);
 #ifdef LED_DEBUG
 	/* prototype test pin */
  	nrf_gpio_pin_dir_set(7, NRF_GPIO_PIN_DIR_OUTPUT );
-	nrf_gpio_pin_write(7, 1);
+	nrf_gpio_pin_write(7, 0);
 #endif
 	application_init();
 
-    while(true)
-    {
+	while(true)
+	{
 		application_run();
 
 		/* manage power */
 		power_manage();
-    }
+	}
 }
 
 
