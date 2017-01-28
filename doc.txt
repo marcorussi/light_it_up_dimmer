@@ -15,15 +15,15 @@ In case of positive result, first bytes of the packet are compared with the expe
 in the firware as below:
 
 FIRST_LENGTH_POS,					/* first length */
-ADV_TYPE_FLAGS_POS,					/* adv flags type */
-BR_EDR_NOT_SUPPORTED_POS,			/* BR/EDR not supported */
-SECOND_LENGTH_POS,					/* second length */
+ADV_TYPE_FLAGS_POS,				/* adv flags type */
+BR_EDR_NOT_SUPPORTED_POS,		/* BR/EDR not supported */
+SECOND_LENGTH_POS,				/* second length */
 MANUF_DATA_TYPE_POS,				/* manufacturer data type */
 MANUF_ID_BYTE_0_POS,				/* manufacturer ID lower byte */
 MANUF_ID_BYTE_1_POS,				/* manufacturer ID higher byte */
-MANUF_DATA_LENGTH_POS,				/* data length */
-SERVICE_ID_BYTE_0_POS,				/* service ID lower byte */
-SERVICE_ID_BYTE_1_POS,				/* service ID higher byte */
+MANUF_DATA_LENGTH_POS,			/* data length */
+SERVICE_ID_BYTE_0_POS,			/* service ID lower byte */
+SERVICE_ID_BYTE_1_POS,			/* service ID higher byte */
 DATA_BYTE_0_POS,					/* data byte 0 */
 DATA_BYTE_1_POS,					/* data byte 1 */
 DATA_BYTE_2_POS,					/* data byte 2 */
@@ -32,7 +32,7 @@ DATA_BYTE_4_POS,					/* data byte 4 */
 DATA_BYTE_5_POS,					/* data byte 5 */
 DATA_BYTE_6_POS,					/* data byte 6 */
 DATA_BYTE_7_POS,					/* data byte 7 */
-CALIB_RSSI_POS,						/* calibrated RSSI */
+CALIB_RSSI_POS,					/* calibrated RSSI */
 
 with the defined values:
 
@@ -57,20 +57,32 @@ The CALIB_RSSI field is a calibrated value of RSSI in two's complement. It is no
 Advertised data from a remote controller are 8 byte long.
 The defined service ID is the only supported and related data bytes are managed as below:
 
-DATA_BYTE_0_POS: reserved - not considered at the moment
-DATA_BYTE_1_POS: any different value than before means that next byte position has a new value
-DATA_BYTE_2_POS: controller state
+DATA_BYTE_0_POS: current controller state
+DATA_BYTE_1_POS: not used 
+DATA_BYTE_2_POS: not used 
 DATA_BYTE_3_POS: not used 
 DATA_BYTE_4_POS: not used 
 DATA_BYTE_5_POS: not used 
 DATA_BYTE_6_POS: not used 
 DATA_BYTE_7_POS: not used 
 
-The new light values are immediately updated in the scan result function as soon as the advertising packet is parsed.
+Any new scanned controller state value is considered only if different than the previous one. The lower nibble of this value is used as index for an array of PWM values (4 channels in %) as below:
+0 - {90, 90, 0, 0}
+1 - {20, 20, 0, 0}
+2 - {0, 0, 0, 0}
+3 - {0, 0, 0, 0}
+4 - {90, 0, 0, 0}
+5 - {20, 0, 0, 0}
+6 - {0, 0, 0, 0}
+7 - {0, 0, 0, 0}
+8 - {0, 90, 0, 0}
+9 - {0, 20, 0, 0}
+10- {0, 0, 0, 0}
+11- {0, 0, 0, 0}
 
 
 2 - Light management
-The module manages 4 PWM channels for respectively RGBW colours of an LED strip. Every time a colour is requested, the algorithm perform a soft change by calculating a PWM ramp starting from the current PWM value to the target one. This fade effect has a fixed speed (ramp inclination) set at module initialisation from the stored value in persistent memory. Indeed the fade percentage value is loaded once in the led_light_init() function. In case of a new value is written in the related characteristic, it won't be used until next power cycle (CONSIDER TO CHANGE THIS BEHAVIOUR).
+The module manages 4 PWM channels. Every time a new PWM value is requested, the algorithm perform a soft change by calculating a PWM ramp starting from the current PWM value to the target one. This fade effect has a fixed speed (ramp inclination) set at module initialisation from the stored value in persistent memory. Indeed the fade percentage value is loaded once in the led_light_init() function. In case of a new value is written in the related characteristic, it won't be used until next power cycle (CONSIDER TO CHANGE THIS BEHAVIOUR).
 
 
 
