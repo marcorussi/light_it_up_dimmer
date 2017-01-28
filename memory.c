@@ -33,7 +33,6 @@
 
 #include "config.h"
 #include "memory.h"
-#include "dimmer_service.h"
 
 
 
@@ -58,20 +57,28 @@ typedef enum
 /* ------------- Local defines --------------- */
 
 /* Validity signature for default value */
-#define MEM_DEFAULT_SIGNATURE						0x22224499
+#define MEM_DEFAULT_SIGNATURE							0x22224499
 
 /* Signature length in bytes */
 #define MEM_SIGNATURE_LENGTH_BYTES					4
 
 /* Memory blocks size in bytes. Muat be aligned to 4. 
-TODO: implement auto-alignment and check if greater than or equal to BLE_DIMMER_SERVICE_CHARS_LENGTH + MEM_SIGNATURE_LENGTH_BYTES */
-#define MEM_BLOCK_SIZE_BYTES						40
+TODO: implement auto-alignment and check if greater than or equal to MEM_BUFFER_DATA_LENGTH + MEM_SIGNATURE_LENGTH_BYTES */
+#define MEM_BLOCK_SIZE_BYTES							16
 
 /* Memory validity signature position */
 #define MEM_SIGNATURE_FIELD_BYTE_POS				(MEM_BLOCK_SIZE_BYTES - MEM_SIGNATURE_LENGTH_BYTES)
 
 /* Number of blocks */
-#define NUM_OF_MEM_BLOCKS							1
+#define NUM_OF_MEM_BLOCKS								1
+
+
+
+
+/* ------------- Exported variables --------------- */
+
+/* Store characteristic values */
+uint8_t char_values[MEM_BUFFER_DATA_LENGTH];
 
 
 
@@ -217,6 +224,27 @@ bool memory_init(const uint8_t *p_def_val)
 		ps_success = false;
 	}
 
+	/* init memory data with default value in case of TOTAL error */
+	if(ps_success != true)
+	{
+		/* very bad situation... use default setting as recovery */
+		/* if success */
+		if(memcpy((void *)char_values, (const void *)&p_def_val, MEM_BUFFER_DATA_LENGTH) == ((void *)char_values))
+		{
+			/* memory initialised with default values. Return success */
+			ps_success = true;
+		}
+		else
+		{
+			/* return false. Set it again */
+			ps_success = false;
+		}
+	}
+	else
+	{
+		/* do nothing */
+	}
+
 	return ps_success;
 }
 
@@ -284,7 +312,7 @@ static void ps_cb_handler(pstorage_handle_t *handle, uint8_t op_code, uint32_t r
 					else
 					{
 						/* copy default data to values */
-						memcpy((void *)char_values, (const void *)p_def_values, BLE_DIMMER_SERVICE_CHARS_LENGTH);
+						memcpy((void *)char_values, (const void *)p_def_values, MEM_BUFFER_DATA_LENGTH);
 
 						/* go to RESTORE DEFAULT state */
 						curr_state = RESTORE_DEFAULT;
@@ -301,7 +329,7 @@ static void ps_cb_handler(pstorage_handle_t *handle, uint8_t op_code, uint32_t r
 				else if(curr_state == LOAD_DATA)
 				{
 					/* copy loaded data to values */
-					memcpy((void *)char_values, (const void *)temp_data, BLE_DIMMER_SERVICE_CHARS_LENGTH);
+					memcpy((void *)char_values, (const void *)temp_data, MEM_BUFFER_DATA_LENGTH);
 	
 					/* data loaded successfully */
 					/* go to IDLE state */
@@ -347,7 +375,7 @@ static void ps_cb_handler(pstorage_handle_t *handle, uint8_t op_code, uint32_t r
 				if(curr_state == RESTORE_DEFAULT)
 				{
 					/* prepare data to be stored */
-					memcpy((void *)temp_data, (const void *)p_def_values, BLE_DIMMER_SERVICE_CHARS_LENGTH); 
+					memcpy((void *)temp_data, (const void *)p_def_values, MEM_BUFFER_DATA_LENGTH); 
 					memcpy((void *)&temp_data[MEM_SIGNATURE_FIELD_BYTE_POS], (const void *)&signature_field, MEM_SIGNATURE_LENGTH_BYTES); 
 
 					/* go to STORE_DATA state */

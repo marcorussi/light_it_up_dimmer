@@ -30,11 +30,28 @@
 
 
 
+/* ------------- Exported defines --------------- */
+
+/* Mmeory data length */
+/* ATTENTION: this value must be equal of or greater than BLE_DIMMER_STORED_CHARS_LENGTH */
+#define MEM_BUFFER_DATA_LENGTH					8
+
+
+
+
+/* ------------- Exported variables --------------- */
+
+/* Store characteristic values */
+extern uint8_t char_values[MEM_BUFFER_DATA_LENGTH];
+
+
+
+
 /* ------------- Exported functions --------------- */
 
-extern bool memory_is_busy		(void);
+extern bool memory_is_busy			(void);
 extern bool memory_update_field	(uint8_t, uint8_t *, uint8_t);
-extern bool memory_init			(const uint8_t *);
+extern bool memory_init				(const uint8_t *);
 
 
 

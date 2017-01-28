@@ -164,7 +164,7 @@ typedef enum
 /* ----------------------- Local variables ---------------------- */
 
 /* Store the last received data flag from adv packet */
-static uint8_t last_data_flag = 0xFF;
+static uint8_t last_data = 0xFF;	/* ATTENTION: be sure that there is not a valid data as 0xFF */
 
 /* Structure to store advertising parameters */
 static ble_gap_adv_params_t adv_params;
@@ -220,7 +220,7 @@ static const uint8_t preamble_adv[DATA_BYTE_0_POS] =
 
 /* ---------------------- Local functions prototypes ----------------------- */
 
-static void dimmer_data_handler(ble_dimmer_st *);
+static void dimmer_data_handler(uint8_t *, uint16_t);
 static void gap_params_init(void);
 static void services_init(void);
 static void on_conn_params_evt(ble_conn_params_evt_t *);
@@ -238,11 +238,11 @@ static void ble_periph_adv_set_data(void);
 /* ---------------------- Local functions ----------------------- */
 
 /* dimmer data handler function */
-static void dimmer_data_handler(ble_dimmer_st * p_dimmer)
+static void dimmer_data_handler(uint8_t *data_ptr, uint16_t data_len)
 {
-	UNUSED_PARAMETER(p_dimmer);
+	//UNUSED_PARAMETER();
 
-	/* do nothing */
+	/* TODO. data not used at the moment */
 }
 
 
@@ -287,12 +287,12 @@ static void services_init(void)
 	ble_dimmer_init_st dimmer_init;
 
 	/* init Device Information Service */
-    memset(&dis_init_obj, 0, sizeof(dis_init_obj));
+	memset(&dis_init_obj, 0, sizeof(dis_init_obj));
 	/* set device information fields */
 	serial_num_string serial_num_ascii;
 	ble_srv_ascii_to_utf8(&dis_init_obj.hw_rev_str, HW_REVISION);
 	ble_srv_ascii_to_utf8(&dis_init_obj.fw_rev_str, FW_REVISION);
-    ble_srv_ascii_to_utf8(&dis_init_obj.manufact_name_str, MANUFACTURER_NAME);
+	ble_srv_ascii_to_utf8(&dis_init_obj.manufact_name_str, MANUFACTURER_NAME);
 	/* set serial number from the UICR */
 	sprintf(serial_num_ascii, "%d", (unsigned int)UICR_DEVICE_SERIAL_NUM);
 	ble_srv_ascii_to_utf8(&dis_init_obj.serial_num_str, serial_num_ascii);
@@ -308,19 +308,19 @@ static void services_init(void)
 	ble_dis_pnp_id_t * 	p_pnp_id
 	ble_srv_security_mode_t 	dis_attr_md
 */
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init_obj.dis_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dis_init_obj.dis_attr_md.write_perm);
+	BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init_obj.dis_attr_md.read_perm);
+	BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dis_init_obj.dis_attr_md.write_perm);
 	/* init Device Info service */
-    err_code = ble_dis_init(&dis_init_obj);
-    APP_ERROR_CHECK(err_code);
+	err_code = ble_dis_init(&dis_init_obj);
+	APP_ERROR_CHECK(err_code);
 
-    /* init DIMMER service structure */
-    memset(&dimmer_init, 0, sizeof(dimmer_init));
+	/* init DIMMER service structure */
+	memset(&dimmer_init, 0, sizeof(dimmer_init));
 	/* set DIMMER data handler */
-    dimmer_init.data_handler = dimmer_data_handler;
-    /* init DIMMER service */
-    err_code = ble_dimmer_init(&m_dimmer, &dimmer_init);
-    APP_ERROR_CHECK(err_code);
+	dimmer_init.data_handler = dimmer_data_handler;
+	/* init DIMMER service */
+	err_code = ble_dimmer_init(&m_dimmer, &dimmer_init);
+	APP_ERROR_CHECK(err_code);
 }
 
 
@@ -385,18 +385,18 @@ static void get_advertising_fields(uint8_t *p_data, uint8_t data_length)
 		if(0 == memcmp(p_data, &preamble_adv, DATA_BYTE_0_POS))
 		{
 			/* preamble is valid. Device found */
-			/* get interesting data */
-			uint8_t data_flag = p_data[DATA_BYTE_1_POS];
+			/* get new data byte */
+			uint8_t new_data = p_data[DATA_BYTE_0_POS];
 			/* ATTENTION: everything else is not considered at the moment */
 	
-			/* if data flag is different than last one */
-			if(data_flag != last_data_flag)
+			/* if new data byte is different than the last one */
+			if(new_data != last_data)
 			{
 				/* store last data byte */
-				last_data_flag = data_flag;
+				last_data = new_data;
 
 				/* send to application related data */
-				application_on_new_scan(p_data[DATA_BYTE_2_POS]);
+				application_on_new_scan(new_data);
 
 #ifdef LED_DEBUG
 				nrf_gpio_pin_toggle(7);
@@ -529,7 +529,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
    - p_ble_evt:  Bluetooth stack event. */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
-    ble_conn_params_on_ble_evt(p_ble_evt);
+	ble_conn_params_on_ble_evt(p_ble_evt);
 	ble_dimmer_on_ble_evt(&m_dimmer, p_ble_evt);  
 	on_ble_evt(p_ble_evt);
 }
@@ -539,29 +539,29 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
    Initializes the SoftDevice and the BLE event interrupt. */
 static void ble_stack_init(void)
 {
-    uint32_t err_code;
-    
-    nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
-    
-    /* Initialize the SoftDevice handler module. */
-    SOFTDEVICE_HANDLER_INIT(&clock_lf_cfg, NULL);
+	uint32_t err_code;
 
-    ble_enable_params_t ble_enable_params;
-    err_code = softdevice_enable_get_default_config(CENTRAL_LINK_COUNT,
-                                                    PERIPHERAL_LINK_COUNT,
-                                                    &ble_enable_params);
-    APP_ERROR_CHECK(err_code);
-    
-    /* Check the ram settings against the used number of links */
-    CHECK_RAM_START_ADDR(CENTRAL_LINK_COUNT,PERIPHERAL_LINK_COUNT);
-    
-    /* Enable BLE stack. */
-    err_code = softdevice_enable(&ble_enable_params);
-    APP_ERROR_CHECK(err_code);
+	nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
 
-    /* Register with the SoftDevice handler module for BLE events. */
-    err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
-    APP_ERROR_CHECK(err_code);
+	/* Initialize the SoftDevice handler module. */
+	SOFTDEVICE_HANDLER_INIT(&clock_lf_cfg, NULL);
+
+	ble_enable_params_t ble_enable_params;
+	err_code = softdevice_enable_get_default_config(CENTRAL_LINK_COUNT,
+		                                           	PERIPHERAL_LINK_COUNT,
+		                                           	&ble_enable_params);
+	APP_ERROR_CHECK(err_code);
+
+	/* Check the ram settings against the used number of links */
+	CHECK_RAM_START_ADDR(CENTRAL_LINK_COUNT,PERIPHERAL_LINK_COUNT);
+
+	/* Enable BLE stack. */
+	err_code = softdevice_enable(&ble_enable_params);
+	APP_ERROR_CHECK(err_code);
+
+	/* Register with the SoftDevice handler module for BLE events. */
+	err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
+	APP_ERROR_CHECK(err_code);
 }
 
 
@@ -569,45 +569,45 @@ static void ble_stack_init(void)
 static void ble_periph_adv_set_data(void)
 {
 	uint32_t      				err_code;
-    int8_t        				tx_power_level = TX_POWER_LEVEL;
+	int8_t        				tx_power_level = TX_POWER_LEVEL;
 	static ble_advdata_t 		ble_adv_data;
 	static ble_advdata_t 		ble_scan_resp;
 
-    /* clear and set advertising data */
-    memset(&ble_adv_data, 0, sizeof(ble_adv_data));
+	/* clear and set advertising data */
+	memset(&ble_adv_data, 0, sizeof(ble_adv_data));
 	/* set name type, appearance, flags and TX power */
-    ble_adv_data.name_type               = BLE_ADVDATA_FULL_NAME;
-    ble_adv_data.include_appearance      = true;
-    ble_adv_data.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
-    ble_adv_data.p_tx_power_level        = &tx_power_level;
+	ble_adv_data.name_type               = BLE_ADVDATA_FULL_NAME;
+	ble_adv_data.include_appearance      = true;
+	ble_adv_data.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
+	ble_adv_data.p_tx_power_level        = &tx_power_level;
 	/* NO manufacturer specific data structure */
 	ble_adv_data.p_manuf_specific_data = NULL;
 
 	/* clear and set scan response data */
 	memset(&ble_scan_resp, 0, sizeof(ble_scan_resp));
 	/* set UUIDs fields */
-    ble_scan_resp.uuids_complete.uuid_cnt = sizeof(adv_uuids) / sizeof(adv_uuids[0]);
-    ble_scan_resp.uuids_complete.p_uuids  = adv_uuids;
+	ble_scan_resp.uuids_complete.uuid_cnt = sizeof(adv_uuids) / sizeof(adv_uuids[0]);
+	ble_scan_resp.uuids_complete.p_uuids  = adv_uuids;
 
 	/* set advertising data. Maximum available size is BLE_GAP_ADV_MAX_SIZE */
 	err_code = ble_advdata_set(&ble_adv_data, &ble_scan_resp);
 	APP_ERROR_CHECK(err_code);
 
 	/* Initialize advertising parameters with defaults values */
-    memset(&adv_params, 0, sizeof(adv_params));
-    
+	memset(&adv_params, 0, sizeof(adv_params));
+
 	/* indirect advertising */
-    adv_params.type = BLE_GAP_ADV_TYPE_ADV_IND;
+	adv_params.type = BLE_GAP_ADV_TYPE_ADV_IND;
 	/* No peer address */
-    adv_params.p_peer_addr = NULL;
+	adv_params.p_peer_addr = NULL;
 	/* Allow scan requests and connect requests from any device */
-    adv_params.fp = BLE_GAP_ADV_FP_ANY;
+	adv_params.fp = BLE_GAP_ADV_FP_ANY;
 	/* No whitelist */
-    adv_params.p_whitelist = NULL;
+	adv_params.p_whitelist = NULL;
 	/* Set advertising interval */
 	adv_params.interval = APP_ADV_INTERVAL;
 	/* set advertising timeout */
-    adv_params.timeout = APP_ADV_TIMEOUT_IN_SECONDS;
+	adv_params.timeout = APP_ADV_TIMEOUT_IN_SECONDS;
 
 	/* advertising is started in a separated function */
 }
@@ -637,8 +637,8 @@ void ble_man_scan_start(void)
 	uint32_t err_code;
 
 	/* start scanning */
-    err_code = sd_ble_gap_scan_start(&m_scan_params);
-    APP_ERROR_CHECK(err_code);
+	err_code = sd_ble_gap_scan_start(&m_scan_params);
+	APP_ERROR_CHECK(err_code);
 }
 
 

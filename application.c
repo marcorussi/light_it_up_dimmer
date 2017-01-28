@@ -57,7 +57,7 @@
 #define DEF_FADE_PWM_PERCENT						50		/* 50% */
 
 /* Number of PWM values groups */
-#define NUM_OF_PWM_VALUES_GROUPS					2
+#define NUM_OF_PWM_VALUES_GROUPS					12
 
 
 
@@ -73,7 +73,7 @@
 /* -------------- Local variables ---------------- */
 
 /* Default characteristic values */
-const uint8_t default_values[BLE_DIMMER_SERVICE_CHARS_LENGTH] = 
+const uint8_t default_values[MEM_BUFFER_DATA_LENGTH] = 
 {
 	DEF_FADE_PWM_PERCENT,		/* Light - Fade */
 	0xFF,
@@ -82,17 +82,44 @@ const uint8_t default_values[BLE_DIMMER_SERVICE_CHARS_LENGTH] =
 	0xFF,
 	0xFF,
 	0xFF,
-	0xFF,
-	0xFF	/* special op. Not relevant since it is a write only characteristic */
+	0xFF
 };
+
 
 /* Flag to indicate that adv timeout is elapsed */
 static volatile bool adv_timeout = false;
 
+
+/* Advertising data value and meaning */
+/*
+	0x10 -> "X UP"			
+	0x11 -> "X DOWN"
+	0x12 -> "X ROT R"
+	0x13 -> "X ROT L"
+	0x14 -> "Y UP"
+	0x15 -> "Y DOWN"
+	0x16 -> "Y ROT R"
+	0x17 -> "Y ROT L"
+	0x18 -> "Z UP"
+	0x19 -> "Z DOWN"
+	0x1A -> "Z ROT R"
+	0x1B -> "Z ROT L"	
+*/
+/* PWM values associated to advertising value */
 static const uint8_t pwm_values[NUM_OF_PWM_VALUES_GROUPS][4] =
 {
-	{90, 90, 90, 90},
-	{20, 20, 20, 20}
+	{90, 90, 0, 0},
+	{20, 20, 0, 0},
+	{0, 0, 0, 0},
+	{0, 0, 0, 0},
+	{90, 0, 0, 0},
+	{20, 0, 0, 0},
+	{0, 0, 0, 0},
+	{0, 0, 0, 0},
+	{0, 90, 0, 0},
+	{0, 20, 0, 0},
+	{0, 0, 0, 0},
+	{0, 0, 0, 0},
 };
 
 
@@ -130,18 +157,30 @@ void app_on_special_op( uint8_t special_op_byte )
 /* callback on new adv scan */
 void application_on_new_scan( uint8_t new_adv_data )
 {
-	/* check data validity */
-	if(new_adv_data < NUM_OF_PWM_VALUES_GROUPS)
+	uint8_t pwm_index;
+	/* if the upper nibble is as expected */
+	if(0x10 == (new_adv_data & 0xF0))
 	{
-		/* update RGBW PWM values */
-		led_update_light(pwm_values[new_adv_data][0],
-				 			  pwm_values[new_adv_data][1],
-				 			  pwm_values[new_adv_data][2],
-				 			  pwm_values[new_adv_data][3]);
+		/* get PWM index */
+		pwm_index = (new_adv_data & 0x0F);
+
+		/* check data validity */
+		if(pwm_index < NUM_OF_PWM_VALUES_GROUPS)
+		{
+			/* update RGBW PWM values */
+			led_update_light(pwm_values[pwm_index][0],
+					 			  pwm_values[pwm_index][1],
+					 			  pwm_values[pwm_index][2],
+					 			  pwm_values[pwm_index][3]);
+		}
+		else
+		{
+			/* invalid data: do nothing */
+		}
 	}
 	else
 	{
-		/* invalid data: do nothing */
+		/* wrong data: do nothing */
 	}
 }
 

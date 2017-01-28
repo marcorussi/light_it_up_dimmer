@@ -39,3 +39,10 @@ You can erase the whole flash memory by running:
 
     $ make erase
 
+
+**DFU Upgrade**
+
+For creating a .zip packet for DFU upgrade run the following command:
+
+nrfutil dfu genpkg liu_dimmer.zip --application ble_led_dimmer_s130.hex --application-version 0xffffffff --dev-revision 0xffff --dev-type 0xffff --sd-req 0xfffe
+

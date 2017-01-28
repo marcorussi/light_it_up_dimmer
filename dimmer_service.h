@@ -35,10 +35,10 @@
 /* ------------- Exported definitions --------------- */
 
 /* The UUID of the Nordic UART Service. */
-#define BLE_UUID_DIMMER_SERVICE 					0x0001		
+#define BLE_UUID_DIMMER_SERVICE 						0x0001		
 
 /* UUID type for the DIMMER Service (vendor specific) */ 
-#define DIMMER_SERVICE_UUID_TYPE					BLE_UUID_TYPE_VENDOR_BEGIN  
+#define DIMMER_SERVICE_UUID_TYPE						BLE_UUID_TYPE_VENDOR_BEGIN  
   
 /* CONFIG Characteristic value length in bytes */
 #define BLE_DIMMER_CONFIG_CHAR_LENGTH				8
@@ -53,7 +53,7 @@
 #define BLE_DIMMER_CONFIG_CHAR_POS					0
 
 /* SPECIAL_OP Characteristic value position in bytes */
-#define BLE_DIMMER_SPECIAL_OP_CHAR_POS				(BLE_DIMMER_CONFIG_CHAR_POS + BLE_DIMMER_CONFIG_CHAR_LENGTH)
+#define BLE_DIMMER_STORED_CHARS_LENGTH				(BLE_DIMMER_CONFIG_CHAR_POS + BLE_DIMMER_CONFIG_CHAR_LENGTH)
 
 
 
@@ -64,7 +64,7 @@
 typedef struct ble_dimmer_s ble_dimmer_st;
 
 /* DIMMER Service event handler type */
-typedef void (*ble_dimmer_data_handler_st) (ble_dimmer_st * p_dimmer);
+typedef void (*ble_dimmer_data_handler_st) (uint8_t * data_ptr, uint16_t data_len);
 
 /* DIMMER Service initialization structure.
    This structure contains the initialization information for the service. The application
@@ -79,21 +79,13 @@ typedef struct
    This structure contains status information related to the service */
 struct ble_dimmer_s
 {
-    uint8_t                  	uuid_type;          	/* UUID type for DIMMER Service Base UUID. */
-    uint16_t                 	service_handle;			/* Handle of DIMMER Service. */
-	ble_gatts_char_handles_t	cfg_charac_handles;		/* Handle for storing CONFIG values */
-	ble_gatts_char_handles_t	special_op_charac_handles;		/* Handle for rebooting into DFU Upgrade */
-    uint16_t                 	conn_handle;			/* Handle of the current connection. BLE_CONN_HANDLE_INVALID if not in a connection. */
-    ble_dimmer_data_handler_st	data_handler;			/* Event handler to be called for handling received data. */
+	uint8_t                  	uuid_type;          	/* UUID type for DIMMER Service Base UUID. */
+	uint16_t                 	service_handle;		/* Handle of DIMMER Service. */
+	ble_gatts_char_handles_t	cfg_char_handles;		/* Handle for storing CONFIG values */
+	ble_gatts_char_handles_t	spec_op_char_handles;/* Handle for rebooting into DFU Upgrade */
+	uint16_t                 	conn_handle;			/* Handle of the current connection. BLE_CONN_HANDLE_INVALID if not in a connection. */
+	ble_dimmer_data_handler_st	data_handler;			/* Event handler to be called for handling received data. */
 };
-
-
-
-
-/* ------------- Exported variables --------------- */
-
-/* Store characteristic values */
-extern uint8_t char_values[BLE_DIMMER_SERVICE_CHARS_LENGTH];
 
 
 
