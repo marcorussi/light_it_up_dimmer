@@ -1,7 +1,8 @@
 # ble_led_dimmer
-A RGBW LED dimmer over BLE based on Nordic nrf51 chipset. Developed under Ubuntu environment using a nrf51 PCA10028 development kit. The firmware is based on S130 from Nordic SDK 11.x.x.
+A 4 channels LED dimmer over BLE based on Nordic nrf51 chipset. Developed under Ubuntu environment using a nrf51 PCA10028 development kit and a custom board. The firmware is based on S130 from Nordic SDK 11.x.x.
 
-This firmware allows to control a RGBW LED strip by scanning a compatible advertising packet from another device.
+This firmware allows to control 4 LED channels by scanning a compatible advertising packet from a controller device. The controller advertises its current state and the driver associates the scanned value with 4 PWM values that are actuated at every new controller state.
+Refer to doc.txt file. 
 
 
 **Install**
