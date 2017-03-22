@@ -81,6 +81,37 @@ Any new scanned controller state value is considered only if different than the 
 11- {0, 0, 0, 0}
 
 
+1.2 - Services
+
+There is only one service available which contains the following characteristics:
+- CONFIG
+- SPECIAL_OP
+The base UUID of the service is: {{0x8A, 0xAF, 0xA6, 0xC2, 0x3A, 0x32, 0x8F, 0x84, 0x75, 0x4F, 0xF3, 0x02, 0x01, 0x50, 0x65, 0x20}} 
+and the two characteristics CONFIG and SPECIAL_OP have an UUID increment of respectively 0x09 and 0x0F. 
+
+1.2.1 - CONFIG characteristic
+This characteristic is 8 byte long and has read and write access. Default values structure in application.c shows how the 8 bytes are defined:
+
+DEF_FADE_PWM_PERCENT: Light - Fade
+0xFF: not used
+0xFF: not used
+0xFF: not used
+0xFF: not used
+0xFF: not used
+0xFF: not used
+0xFF: not used
+
+The first byte only is used at the moment. It is the fade effect value varying from 0% to 200% and it represents the amount of PWM percentage to apply at each fade step which fixed at 100 ms (default value is 50%). Upon write operation the new value is stored in the persistent flash memory and it will read and used at the next power cycle. 
+Indeed the value is set once in light module initialisation routine. 
+
+1.2.2 - SPECIAL OP characteristic
+This characteristic is 1 byte long and can be written only. Upon write command the new value is sent to application module and managed accordingly. Any special command can be implemented. The only valid command implemented at the moment is:
+
+DFU_UPGRADE_CHAR_PASSWORD: 0xA9
+
+used for entering in bootloader mode to perform a firmware upgrade.
+
+
 2 - Light management
 The module manages 4 PWM channels. Every time a new PWM value is requested, the algorithm perform a soft change by calculating a PWM ramp starting from the current PWM value to the target one. This fade effect has a fixed speed (ramp inclination) set at module initialisation from the stored value in persistent memory. Indeed the fade percentage value is loaded once in the led_light_init() function. In case of a new value is written in the related characteristic, it won't be used until next power cycle (CONSIDER TO CHANGE THIS BEHAVIOUR).
 
