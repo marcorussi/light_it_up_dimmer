@@ -69,16 +69,16 @@
 #define PWM_DC_MIN_VALUE          				0                                                                 		
 
 /* PWM channel for RED */   
-#define PWM_CH_R          							21//28
+#define PWM_CH_R          							28
 
 /* PWM channel for GREEN */   
-#define PWM_CH_G          							22//23
+#define PWM_CH_G          							23
 
 /* PWM channel for BLUE */   
-#define PWM_CH_B          							23//22
+#define PWM_CH_B          							22
 
 /* PWM channel for BLUE */   
-#define PWM_CH_W         							25//17
+#define PWM_CH_W         							17
 
 
 
@@ -311,7 +311,7 @@ static void fade_timeout_handler(void * p_context)
 	/* manage light */
 	led_manage_light();	//TODO: avoid this call and move code here
 
-	nrf_gpio_pin_toggle(24);
+	//nrf_gpio_pin_toggle(24);
 }
 
 
