@@ -54,7 +54,7 @@
 #define DFU_UPGRADE_CHAR_PASSWORD				0xA9
 
 /* Default fade percentage value */
-#define DEF_FADE_PWM_PERCENT						50		/* 50% */
+#define DEF_FADE_PWM_PERCENT						10		/* 10 % */
 
 /* Number of PWM values groups */
 #define NUM_OF_PWM_VALUES_GROUPS					12
@@ -108,6 +108,7 @@ static volatile bool adv_timeout = false;
 /* PWM values associated to advertising value */
 static const uint8_t pwm_values[NUM_OF_PWM_VALUES_GROUPS][4] =
 {
+/*
 	{100, 100, 100, 100},
 	{20, 20, 20, 20},
 	{0, 0, 0, 0},
@@ -120,6 +121,19 @@ static const uint8_t pwm_values[NUM_OF_PWM_VALUES_GROUPS][4] =
 	{0, 0, 0, 0},
 	{0, 0, 0, 0},
 	{0, 0, 0, 0},
+*/
+	{ 10, 0, 0, 0},	/* good night */
+	{ 25, 0, 0, 0},	/* low */
+	{  0, 0, 0, 0},
+	{  0, 0, 0, 0},
+	{ 50, 0, 0, 0},	/* mid-low */
+	{ 75, 0, 0, 0},	/* mid-high */
+	{  0, 0, 0, 0},
+	{  0, 0, 0, 0},
+	{100, 0, 0, 0},	/* high */
+	{  0, 0, 0, 0},	/* OFF */ 
+	{  0, 0, 0, 0},
+	{  0, 0, 0, 0},
 };
 
 
@@ -245,7 +259,7 @@ void application_run( void )
 	}
 	
 	/* manage light */
-	led_manage_light();
+	//led_manage_light();
 }
 
 

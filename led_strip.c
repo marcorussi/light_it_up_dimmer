@@ -52,29 +52,33 @@
 
 /* ------------- Local defines --------------- */
 
+/* Fade timer defines */
+#define FADE_TIMER_TICK_PERIOD_MS				20		/* 20 ms */
+#define FADE_TIMER_TICK_COUNT						((uint32_t)(((uint64_t)FADE_TIMER_TICK_PERIOD_MS * 1000000)/30517))
+
 /* Memory position: fade percentage field */
-#define FADE_MEM_POSITION				(BLE_DIMMER_CONFIG_CHAR_POS + 0)	/* First location in memory data structure */
+#define FADE_MEM_POSITION							(BLE_DIMMER_CONFIG_CHAR_POS + 0)	/* First location in memory data structure */
 
 /* PWM fade period in ms */
-#define PWM_FADE_PERIOD_MS				100    
+#define PWM_FADE_PERIOD_MS							500    
 
 /* Maximum PWM DC value */
-#define PWM_DC_MAX_VALUE         	100        
+#define PWM_DC_MAX_VALUE         				100        
 
 /* Minimum PWM DC value */                                 
-#define PWM_DC_MIN_VALUE          	0                                                                 		
+#define PWM_DC_MIN_VALUE          				0                                                                 		
 
 /* PWM channel for RED */   
-#define PWM_CH_R          				28
+#define PWM_CH_R          							21//28
 
 /* PWM channel for GREEN */   
-#define PWM_CH_G          				23
+#define PWM_CH_G          							22//23
 
 /* PWM channel for BLUE */   
-#define PWM_CH_B          				22
+#define PWM_CH_B          							23//22
 
 /* PWM channel for BLUE */   
-#define PWM_CH_W         				17
+#define PWM_CH_W         							25//17
 
 
 
@@ -85,7 +89,10 @@
 APP_PWM_INSTANCE(PWM1,1);  
 
 /* Create the instance "PWM2" using TIMER3. */                 
-APP_PWM_INSTANCE(PWM2,2);  
+APP_PWM_INSTANCE(PWM2,2); 
+
+/* Define timer for light fade */
+APP_TIMER_DEF(fade_timer); 
 
 
 
@@ -123,7 +130,8 @@ static int8_t white_pwm_step = 0;
 
 /* ------------- Local functions prototypes --------------- */
 
-static void pwm_ready_callback(uint32_t);
+static void pwm_ready_callback	(uint32_t);
+static void fade_timeout_handler	(void *);
 
 
 
@@ -133,21 +141,21 @@ static void pwm_ready_callback(uint32_t);
 /* Function to init LED light module */
 void led_light_init(void)
 {
-	ret_code_t err_code;
+	uint32_t err_code;
 
-	/* 2-channel PWM1, 200Hz, output on DK LED pins. */
-	app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_CH_R, PWM_CH_G);
-	/* 2-channel PWM2, 200Hz, output on DK LED pins. */
-	app_pwm_config_t pwm2_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, PWM_CH_B, PWM_CH_W);
+	/* 2-channel PWM1, 2000Hz, output on DK LED pins. */
+	app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(500, PWM_CH_R, PWM_CH_G);
+	/* 2-channel PWM2, 2000Hz, output on DK LED pins. */
+	app_pwm_config_t pwm2_cfg = APP_PWM_DEFAULT_CONFIG_2CH(500, PWM_CH_B, PWM_CH_W);
 
 	/* Set PWM R channel polarity */
-	pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_LOW;
 	/* Set PWM G channel polarity */
-	pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_LOW;
 	/* Set PWM B channel polarity */
-	pwm2_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	pwm2_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_LOW;
 	/* Set PWM W channel polarity */
-	pwm2_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	pwm2_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_LOW;
 
 	/* Initialize PWM1 */
 	err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback);
@@ -167,6 +175,14 @@ void led_light_init(void)
 	/* ATTENTION: fade value is read from memory once during init */
 	/* get fade value at init only */
 	fade_percent_value = char_values[FADE_MEM_POSITION];
+
+	/* init fade trigger timer */
+	err_code = app_timer_create(&fade_timer, APP_TIMER_MODE_REPEATED, fade_timeout_handler);
+	APP_ERROR_CHECK(err_code);
+
+	/* start fade timer */
+	err_code = app_timer_start(fade_timer, FADE_TIMER_TICK_COUNT, NULL);
+	APP_ERROR_CHECK(err_code);
 }
 
 
@@ -225,7 +241,8 @@ void led_manage_light(void)
 {
 	/* update PWM until fade count expires. Last run is set directly to target PWM value.
 	   Indeed the target value can not be a multiple of calculated step. */
-	while(fade_count > 0)
+	//while(fade_count > 0)
+	if(fade_count > 0)
 	{
 		/* increment R channel PWM */
 		if(fade_count == 1)
@@ -276,7 +293,7 @@ void led_manage_light(void)
 		while(app_pwm_channel_duty_set(&PWM2, 1, white_pwm_value) == NRF_ERROR_BUSY);
 
 		/* wait for next fade increment */
-		nrf_delay_ms(PWM_FADE_PERIOD_MS);
+		//nrf_delay_ms(PWM_FADE_PERIOD_MS);
 		fade_count--;
 	}
 }
@@ -286,22 +303,34 @@ void led_manage_light(void)
 
 /* ------------- Local functions implementation --------------- */
 
+/* Timer timeout handler for light fade management */
+static void fade_timeout_handler(void * p_context)
+{
+	UNUSED_PARAMETER(p_context);
+
+	/* manage light */
+	led_manage_light();	//TODO: avoid this call and move code here
+
+	nrf_gpio_pin_toggle(24);
+}
+
+
 /* PWM ready callback function */
 static void pwm_ready_callback(uint32_t pwm_id)
 {
-    /* set related PWM ready flag */
-    if(pwm_id == 0)
-    {
-        pwm1_ready_flag = true;
-    }
-    else if(pwm_id == 1)
-    {
+	/* set related PWM ready flag */
+	if(pwm_id == 0)
+	{
+		pwm1_ready_flag = true;
+	}
+	else if(pwm_id == 1)
+	{
 		pwm2_ready_flag = true;
-    }
-    else
-    {
+	}
+	else
+	{
 		/* invalid PWM index */
-    }
+	}
 }
 
 
