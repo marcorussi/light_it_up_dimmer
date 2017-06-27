@@ -112,9 +112,9 @@
 /* Scanning parameters */    
 /* TODO: consider to move the first 2 following defines to config.h */
 /* Determines scan interval in units of 0.625 millisecond */                                                        
-#define SCAN_INTERVAL           			1600	/* 1000 ms */
+#define SCAN_INTERVAL           			800	/* 500 ms */
  /* Determines scan window in units of 0.625 millisecond */                      
-#define SCAN_WINDOW             			800		/* 500 ms */
+#define SCAN_WINDOW             			400		/* 250 ms */
 /* If 1, performe active scanning (scan requests) */                    
 #define SCAN_ACTIVE             			1 
 /* If 1, ignore unknown devices (non whitelisted) */                              
@@ -451,6 +451,9 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 		{
             if (p_gap_evt->params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
             {
+				err_code = sd_ble_gap_adv_start(&adv_params);
+   				APP_ERROR_CHECK(err_code);
+
 				/* inform application */
 				app_on_adv_timeout();
 			}

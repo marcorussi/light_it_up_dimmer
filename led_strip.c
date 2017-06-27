@@ -149,13 +149,13 @@ void led_light_init(void)
 	app_pwm_config_t pwm2_cfg = APP_PWM_DEFAULT_CONFIG_2CH(500, PWM_CH_B, PWM_CH_W);
 
 	/* Set PWM R channel polarity */
-	pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_LOW;
+	pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
 	/* Set PWM G channel polarity */
-	pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_LOW;
+	pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
 	/* Set PWM B channel polarity */
-	pwm2_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_LOW;
+	pwm2_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
 	/* Set PWM W channel polarity */
-	pwm2_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_LOW;
+	pwm2_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
 	/* Initialize PWM1 */
 	err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback);

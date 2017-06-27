@@ -44,7 +44,7 @@
 #define HW_REVISION										"Proto"
 
 /* FW revision */
-#define FW_REVISION										"A0.6"
+#define FW_REVISION										"A0.7"
 
 /* Manufacturer name */
 #define MANUFACTURER_NAME								"Pingeco ltd"

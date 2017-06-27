@@ -122,15 +122,15 @@ static const uint8_t pwm_values[NUM_OF_PWM_VALUES_GROUPS][4] =
 	{0, 0, 0, 0},
 	{0, 0, 0, 0},
 */
-	{ 10, 0, 0, 0},	/* good night */
-	{ 25, 0, 0, 0},	/* low */
+	{ 10, 10, 10, 10},	/* good night */
+	{ 25, 25, 25, 25},	/* low */
 	{  0, 0, 0, 0},
 	{  0, 0, 0, 0},
-	{ 50, 0, 0, 0},	/* mid-low */
-	{ 75, 0, 0, 0},	/* mid-high */
+	{ 50, 50, 50, 50},	/* mid-low */
+	{ 75, 75, 75, 75},	/* mid-high */
 	{  0, 0, 0, 0},
 	{  0, 0, 0, 0},
-	{100, 0, 0, 0},	/* high */
+	{100, 100, 100, 100},	/* high */
 	{  0, 0, 0, 0},	/* OFF */ 
 	{  0, 0, 0, 0},
 	{  0, 0, 0, 0},
@@ -236,6 +236,9 @@ void application_init( void )
 
 	/* start avertising */
 	ble_man_adv_start();
+
+	/* start scanning */
+	ble_man_scan_start();
 }
 
 
@@ -251,7 +254,7 @@ void application_run( void )
 		//nrf_gpio_pin_write(7, 0);
 #endif
 		/* start scanning */
-		ble_man_scan_start();
+		//ble_man_scan_start();
 	}
 	else
 	{
